@@ -3,11 +3,11 @@
 import { useState, FormEvent } from "react"
 import { MessageSquare, Wallet, Users } from "lucide-react"
 import { Message, Transaction, Whale } from "@/types"
-import { NavButton } from "@/components/layout/NavButton"
+import { NavButton } from "@/app/components/layout/NavButton"
 
-import { TransactionList } from "@/components/transaction/TransactionList"
-import { WhaleList } from "@/components/whales/WhalesList"
-import ChatInterface from "@/components/chat/ChatInterface"
+import { TransactionList } from "@/app/components/transaction/TransactionList"
+import { WhaleList } from "@/app/components/whales/WhalesList"
+import ChatInterface from "@/app/components/chat/ChatInterface"
 import Image from "next/image"
 
 const mockTransactions: Transaction[] = [

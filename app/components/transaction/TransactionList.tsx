@@ -1,9 +1,14 @@
-import { Transaction } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TransactionCard } from './TransactionCard';
+import { Transaction } from "@/types"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card"
+import { TransactionCard } from "./TransactionCard"
 
 interface TransactionListProps {
-  transactions: Transaction[];
+  transactions: Transaction[]
 }
 
 export const TransactionList = ({ transactions }: TransactionListProps) => (
@@ -12,9 +17,9 @@ export const TransactionList = ({ transactions }: TransactionListProps) => (
       <CardTitle>Transactions</CardTitle>
     </CardHeader>
     <CardContent>
-      {transactions.map(tx => (
+      {transactions.map((tx) => (
         <TransactionCard key={tx.id} transaction={tx} />
       ))}
     </CardContent>
   </Card>
-);
+)

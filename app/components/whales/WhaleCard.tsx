@@ -1,8 +1,8 @@
-import { Whale } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { Whale } from "@/types"
+import { Card, CardContent } from "@/app/components/ui/card"
 
 interface WhaleCardProps {
-  whale: Whale;
+  whale: Whale
 }
 
 export const WhaleCard = ({ whale }: WhaleCardProps) => (
@@ -12,4 +12,4 @@ export const WhaleCard = ({ whale }: WhaleCardProps) => (
       <div className="font-semibold mt-2">{whale.holdings}</div>
     </CardContent>
   </Card>
-);
+)

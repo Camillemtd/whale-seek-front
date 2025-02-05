@@ -2,11 +2,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 
+interface Message {
+  type: 'user' | 'agent' | 'error';
+  content: string;
+}
+
 const ChatInterface = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -16,12 +21,11 @@ const ChatInterface = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Add user message
-    const userMessage = {
+    const userMessage: Message = {
       type: 'user',
       content: input
     };
@@ -44,16 +48,14 @@ const ChatInterface = () => {
 
       const data = await response.text();
       
-      // Add agent response
-      const agentMessage = {
+      const agentMessage: Message = {
         type: 'agent',
         content: data
       };
       setMessages(prev => [...prev, agentMessage]);
     } catch (error) {
       console.error('Error:', error);
-      // Add error message
-      const errorMessage = {
+      const errorMessage: Message = {
         type: 'error',
         content: "Désolé, une erreur s'est produite. Veuillez réessayer."
       };
@@ -65,7 +67,6 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-[90vh] bg-gray-100">
-      {/* Chat messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <div
@@ -95,13 +96,12 @@ const ChatInterface = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
       <div className="border-t border-gray-200 p-4 bg-white">
         <form onSubmit={handleSubmit} className="flex space-x-4">
           <input
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
             placeholder="Écrivez votre message ici..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             disabled={isLoading}
