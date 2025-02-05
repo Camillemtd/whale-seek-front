@@ -1,4 +1,3 @@
-// app/components/Header.tsx
 'use client';
 
 import { usePrivy } from '@privy-io/react-auth';
@@ -7,12 +6,11 @@ export default function Header() {
   const { login, logout, authenticated, user, ready } = usePrivy();
 
   return (
-    <header className="w-full bg-black shadow-sm">
+    <header className="fixed top-0 right-0 ml-20 w-[calc(100%-5rem)] bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center">
-          <h1 className="text-xl font-bold">Mon App</h1>
+          <h1 className="text-xl font-bold">WHAL-E</h1>
         </div>
-
         <div className="flex items-center gap-4">
           {!ready ? (
             <div className="h-9 w-24 bg-gray-100 animate-pulse rounded" />
