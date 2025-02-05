@@ -1,0 +1,122 @@
+"use client"
+import React, { useState, useRef, useEffect } from 'react';
+import { Send } from 'lucide-react';
+
+const ChatInterface = () => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    // Add user message
+    const userMessage = {
+      type: 'user',
+      content: input
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3001/agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.text();
+      
+      // Add agent response
+      const agentMessage = {
+        type: 'agent',
+        content: data
+      };
+      setMessages(prev => [...prev, agentMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      // Add error message
+      const errorMessage = {
+        type: 'error',
+        content: "Désolé, une erreur s'est produite. Veuillez réessayer."
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col h-[90vh] bg-gray-100">
+      {/* Chat messages area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-3xl p-4 rounded-lg ${
+                message.type === 'user'
+                  ? 'bg-blue-500 text-white'
+                  : message.type === 'error'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white text-gray-800'
+              }`}
+            >
+              {message.content}
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-200 p-4 rounded-lg">
+              En train de réfléchir...
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input area */}
+      <div className="border-t border-gray-200 p-4 bg-white">
+        <form onSubmit={handleSubmit} className="flex space-x-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Écrivez votre message ici..."
+            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ChatInterface;
