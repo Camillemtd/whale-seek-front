@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useEffect } from "react"
 import { MessageSquare, Wallet, Users } from "lucide-react"
-import { Message, Transaction, Whale } from "@/types"
+import { Message } from "@/types"
 import { NavButton } from "@/components/layout/NavButton"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
 import { usePrivy } from "@privy-io/react-auth"
@@ -13,23 +13,6 @@ import ChatInterface from "@/components/chat/ChatInterface"
 import DeployWallet from "@/components/DeployWallet"
 import Image from "next/image"
 import AuthButton from "../../components/AuthButton"
-
-const mockTransactions: Transaction[] = [
-  {
-    id: 1,
-    token: "ETH",
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    amount: "1.5",
-    type: "buy",
-  },
-  {
-    id: 2,
-    token: "BTC",
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    amount: "0.05",
-    type: "sell",
-  },
-]
 
 type TabType = "chat" | "transactions" | "whales"
 
@@ -48,7 +31,7 @@ export default function Dashboard() {
     const checkWalletDeployment = async () => {
       if (!user?.wallet?.address) return
       try {
-        const wallets = await getWalletsByOwner(user.wallet.address)
+        const wallets = await getWalletsByOwner(user.wallet.address as `0x${string}`)
         setHasDeployedWallet((wallets as `0x${string}`[]).length > 0)
       } catch (error) {
         console.error("Erreur lors de la vérification du wallet:", error)
@@ -76,9 +59,7 @@ export default function Dashboard() {
     setInput("")
   }
 
-  // Fonction pour rendre le contenu principal
   const renderMainContent = () => {
-    // Si l'utilisateur n'est pas connecté
     if (!user?.wallet?.address) {
       return (
         <div className="flex items-center justify-center h-64">
@@ -87,7 +68,6 @@ export default function Dashboard() {
       )
     }
 
-    // Si on n'a pas encore vérifié le statut du wallet
     if (hasDeployedWallet === null) {
       return (
         <div className="flex h-full items-center justify-center">
@@ -96,7 +76,6 @@ export default function Dashboard() {
       )
     }
 
-    // Si l'utilisateur n'a pas de wallet déployé
     if (!hasDeployedWallet) {
       return (
         <div className="flex h-full items-center justify-center">
@@ -105,12 +84,11 @@ export default function Dashboard() {
       )
     }
 
-    // Contenu normal de l'application
     return (
       <>
         {activeTab === "chat" && <ChatInterface />}
         {activeTab === "transactions" && (
-          <TransactionList transactions={mockTransactions} />
+          <TransactionList walletAddress={user.wallet.address as `0x${string}`} />
         )}
         {activeTab === "whales" && <WhaleList />}
       </>
@@ -119,7 +97,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-background">
-      <div className="fixed w-20 h-screen bg-card p-4 flex flex-col items-center border-r overflow-y-hidden">
+      <div className="fixed w-20 h-screen bg-card p-4 flex flex-col items-center border-r overflow-hidden">
         <div className="">
           <Image
             src="/icon.png"
