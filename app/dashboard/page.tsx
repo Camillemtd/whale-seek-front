@@ -1,12 +1,10 @@
 "use client"
 
-import { useState, FormEvent, useEffect } from "react"
-import { MessageSquare, Wallet, Users } from "lucide-react"
-import { Message } from "@/types"
+import { useState, useEffect } from "react"
+import { MessageSquare, Wallet, Users, LucideIcon } from "lucide-react"
 import { NavButton } from "@/components/layout/NavButton"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
 import { usePrivy } from "@privy-io/react-auth"
-
 import { TransactionList } from "@/components/transaction/TransactionList"
 import { WhaleList } from "@/components/whales/WhalesList"
 import ChatInterface from "@/components/chat/ChatInterface"
@@ -18,11 +16,7 @@ type TabType = "chat" | "transactions" | "whales"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("chat")
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState("")
-  const [hasDeployedWallet, setHasDeployedWallet] = useState<boolean | null>(
-    null
-  )
+  const [hasDeployedWallet, setHasDeployedWallet] = useState<boolean | null>(null)
 
   const { user } = usePrivy()
   const { getWalletsByOwner } = useWalletFactory()
@@ -34,7 +28,7 @@ export default function Dashboard() {
         const wallets = await getWalletsByOwner(user.wallet.address as `0x${string}`)
         setHasDeployedWallet((wallets as `0x${string}`[]).length > 0)
       } catch (error) {
-        console.error("Erreur lors de la vérification du wallet:", error)
+        console.error("Error checking wallet:", error)
         setHasDeployedWallet(false)
       }
     }
@@ -42,28 +36,47 @@ export default function Dashboard() {
     checkWalletDeployment()
   }, [user?.wallet?.address, getWalletsByOwner])
 
-  const handleMessageSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
-
-    setMessages((prev) => [...prev, { type: "user", content: input }])
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: "agent",
-          content: "Je surveille votre portefeuille...",
-        },
-      ])
-    }, 1000)
-    setInput("")
-  }
-
   const renderMainContent = () => {
     if (!user?.wallet?.address) {
       return (
-        <div className="flex items-center justify-center h-64">
-          <AuthButton showWallet={false} />
+        <div className="flex flex-col items-center justify-center h-full bg-gradient-to-b from-background to-background/80">
+          <div className="text-center space-y-6 max-w-2xl mx-auto px-4">
+            <div className="mb-8">
+              <Image
+                src="/icon.png"
+                alt="Logo"
+                width={120}
+                height={120}
+                className="mx-auto"
+              />
+            </div>
+            <h1 className="text-4xl font-bold text-primary">
+              Welcome to your Dashboard
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Connect your wallet to access all dashboard features
+            </p>
+            <div className="flex justify-center">
+              <AuthButton showWallet={false} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+              <FeatureCard
+                icon={MessageSquare}
+                title="Chat"
+                description="Interact with our intelligent assistant"
+              />
+              <FeatureCard
+                icon={Wallet}
+                title="Transactions"
+                description="Track your transactions in real time"
+              />
+              <FeatureCard
+                icon={Users}
+                title="Whales"
+                description="Analyze large wallet movements"
+              />
+            </div>
+          </div>
         </div>
       )
     }
@@ -71,7 +84,7 @@ export default function Dashboard() {
     if (hasDeployedWallet === null) {
       return (
         <div className="flex h-full items-center justify-center">
-          Loading...
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       )
     }
@@ -94,6 +107,21 @@ export default function Dashboard() {
       </>
     )
   }
+
+
+  interface FeatureCardProps {
+    icon: LucideIcon
+    title: string
+    description: string
+  }
+
+  const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => (
+    <div className="p-6 rounded-lg border bg-card hover:shadow-lg transition-shadow">
+      <Icon className="w-12 h-12 text-primary mb-4" />
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </div>
+  )
 
   return (
     <div className="flex h-screen bg-background">
@@ -127,7 +155,9 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="ml-20 flex-1 p-6 pt-20">{renderMainContent()}</div>
+      <div className="ml-20 flex-1 p-6 pt-20">
+        {renderMainContent()}
+      </div>
     </div>
   )
 }
