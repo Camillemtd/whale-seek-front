@@ -4,8 +4,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card"
+} from "@/components/ui/card"
 import { TransactionCard } from "./TransactionCard"
+import DeployWallet from "../DeployWallet"
 
 interface TransactionListProps {
   transactions: Transaction[]
@@ -21,5 +22,6 @@ export const TransactionList = ({ transactions }: TransactionListProps) => (
         <TransactionCard key={tx.id} transaction={tx} />
       ))}
     </CardContent>
+    <DeployWallet />
   </Card>
 )
