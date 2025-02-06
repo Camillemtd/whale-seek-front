@@ -1,6 +1,8 @@
 "use client"
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
+import { usePrivy } from "@privy-io/react-auth";
 
 interface Message {
   type: 'user' | 'agent' | 'error';
@@ -10,6 +12,7 @@ interface Message {
 const STORAGE_KEY = 'chat_messages';
 
 const ChatInterface = () => {
+  const { user } = usePrivy();
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
       const savedMessages = localStorage.getItem(STORAGE_KEY);
@@ -37,7 +40,7 @@ const ChatInterface = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !user?.wallet?.address) return;
 
     const userMessage: Message = {
       type: 'user',
@@ -53,7 +56,10 @@ const ChatInterface = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: input }),
+        body: JSON.stringify({ 
+          query: input,
+          account: user.wallet.address
+        }),
       });
 
       if (!response.ok) {
@@ -78,6 +84,14 @@ const ChatInterface = () => {
 
     setIsLoading(false);
   };
+
+  if (!user?.wallet?.address) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-lg text-gray-600">Please connect your wallet to use the chat.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[90vh] bg-gray-100">

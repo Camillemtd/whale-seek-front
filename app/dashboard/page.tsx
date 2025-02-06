@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { MessageSquare, Wallet, Users, LucideIcon } from "lucide-react"
 import { NavButton } from "@/components/layout/NavButton"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
@@ -21,20 +21,20 @@ export default function Dashboard() {
   const { user } = usePrivy()
   const { getWalletsByOwner } = useWalletFactory()
 
-  useEffect(() => {
-    const checkWalletDeployment = async () => {
-      if (!user?.wallet?.address) return
-      try {
-        const wallets = await getWalletsByOwner(user.wallet.address as `0x${string}`)
-        setHasDeployedWallet((wallets as `0x${string}`[]).length > 0)
-      } catch (error) {
-        console.error("Error checking wallet:", error)
-        setHasDeployedWallet(false)
-      }
+  const checkWalletDeployment = useCallback(async () => {
+    if (!user?.wallet?.address) return
+    try {
+      const wallets = await getWalletsByOwner(user.wallet.address as `0x${string}`)
+      setHasDeployedWallet((wallets as `0x${string}`[]).length > 0)
+    } catch (error) {
+      console.error("Error checking wallet:", error)
+      setHasDeployedWallet(false)
     }
-
-    checkWalletDeployment()
   }, [user?.wallet?.address, getWalletsByOwner])
+
+  useEffect(() => {
+    checkWalletDeployment()
+  }, [checkWalletDeployment])
 
   const renderMainContent = () => {
     if (!user?.wallet?.address) {
@@ -92,7 +92,7 @@ export default function Dashboard() {
     if (!hasDeployedWallet) {
       return (
         <div className="flex h-full items-center justify-center">
-          <DeployWallet onSuccess={() => setHasDeployedWallet(true)} />
+          <DeployWallet onSuccess={checkWalletDeployment} />
         </div>
       )
     }
@@ -107,7 +107,6 @@ export default function Dashboard() {
       </>
     )
   }
-
 
   interface FeatureCardProps {
     icon: LucideIcon
