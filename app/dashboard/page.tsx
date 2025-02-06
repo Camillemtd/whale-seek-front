@@ -27,19 +27,6 @@ const mockTransactions: Transaction[] = [
   },
 ]
 
-const mockWhales: Whale[] = [
-  {
-    id: 1,
-    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    holdings: "1000 ETH",
-  },
-  {
-    id: 2,
-    address: "0x842d35Cc6634C0532925a3b844Bc454e4438f44f",
-    holdings: "100 BTC",
-  },
-]
-
 type TabType = "chat" | "transactions" | "whales"
 
 export default function Dashboard() {
@@ -99,7 +86,7 @@ export default function Dashboard() {
         {activeTab === "transactions" && (
           <TransactionList transactions={mockTransactions} />
         )}
-        {activeTab === "whales" && <WhaleList whales={mockWhales} />}
+        {activeTab === "whales" && <WhaleList/>}
       </div>
     </div>
   )
