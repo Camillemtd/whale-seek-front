@@ -1,5 +1,5 @@
 import { Whale } from "@/types"
-import { Card, CardContent } from "@/app/components/ui/card"
+import { Card, CardContent } from "../ui/card"
 
 interface WhaleCardProps {
   whale: Whale

@@ -1,14 +1,13 @@
-'use client';
-import { usePrivy } from '@privy-io/react-auth';
-import { redirect } from 'next/navigation';
-import { Bot, Wallet, LineChart, ArrowRight, Users } from 'lucide-react';
-
+"use client"
+import { usePrivy } from "@privy-io/react-auth"
+import { redirect } from "next/navigation"
+import { Bot, Wallet, LineChart, ArrowRight, Users } from "lucide-react"
 
 export default function LandingPage() {
-  const { login, authenticated } = usePrivy();
+  const { login, authenticated } = usePrivy()
 
   if (authenticated) {
-    redirect('/dashboard');
+    redirect("/dashboard")
   }
 
   return (
@@ -25,22 +24,31 @@ export default function LandingPage() {
               WhaleSeek AI
             </h1>
             <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Your intelligent crypto assistant powered by AI, tracking whales and optimizing your portfolio
+              Your intelligent crypto assistant powered by AI, tracking whales
+              and optimizing your portfolio
             </p>
           </div>
 
+          <button
+            onClick={login}
+            className="group mb-6 px-8 py-4 bg-primary hover:bg-primary/90 rounded-full text-lg font-medium text-primary-foreground transition-all flex items-center gap-2 mx-auto"
+          >
+            Get Started
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <FeatureCard 
+            <FeatureCard
               icon={Bot}
               title="AI Assistant"
               description="Real-time analysis and personalized trading strategies tailored to your goals"
             />
-            <FeatureCard 
+            <FeatureCard
               icon={Users}
               title="Whale Tracking"
               description="Monitor large wallet movements and anticipate market trends"
             />
-            <FeatureCard 
+            <FeatureCard
               icon={LineChart}
               title="Smart Trading"
               description="Automated transactions with AI-powered timing and risk management"
@@ -52,24 +60,16 @@ export default function LandingPage() {
             <StatCard number="1000+" label="Active Users" />
             <StatCard number="99.9%" label="Success Rate" />
           </div>
-
-          <button
-            onClick={login}
-            className="group px-8 py-4 bg-primary hover:bg-primary/90 rounded-full text-lg font-medium text-primary-foreground transition-all flex items-center gap-2 mx-auto"
-          >
-            Get Started
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 interface Feature {
-  icon: React.ElementType;
-  title: string;
-  description: string;
+  icon: React.ElementType
+  title: string
+  description: string
 }
 
 function FeatureCard({ icon: Icon, title, description }: Feature) {
@@ -81,12 +81,12 @@ function FeatureCard({ icon: Icon, title, description }: Feature) {
       <h3 className="text-xl font-semibold mb-3">{title}</h3>
       <p className="text-muted-foreground">{description}</p>
     </div>
-  );
+  )
 }
 
 interface Stat {
-  number: string;
-  label: string;
+  number: string
+  label: string
 }
 
 function StatCard({ number, label }: Stat) {
@@ -95,5 +95,5 @@ function StatCard({ number, label }: Stat) {
       <div className="text-2xl font-bold text-primary mb-1">{number}</div>
       <div className="text-sm text-muted-foreground">{label}</div>
     </div>
-  );
+  )
 }

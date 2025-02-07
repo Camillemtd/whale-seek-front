@@ -1,71 +1,66 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ExternalLink, Search } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ExternalLink, Search } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 
 interface Whale {
-  whale_address: string;
-  first_seen: string;
-  last_seen: string;
-  created_at: string;
-  updated_at: string;
-  detected_transaction_id: string;
+  whale_address: string
+  first_seen: string
+  last_seen: string
+  created_at: string
+  updated_at: string
+  detected_transaction_id: string
 }
 
 export const WhaleList = () => {
-  const [whales, setWhales] = useState<Whale[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [whales, setWhales] = useState<Whale[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchWhales = async () => {
       try {
-        const response = await fetch('http://localhost:3001/whales');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_API_URL}/whales`
+        )
         if (!response.ok) {
-          throw new Error('Failed to fetch whales');
+          throw new Error("Failed to fetch whales")
         }
-        const data = await response.json();
-        setWhales(data);
+        const data = await response.json()
+        setWhales(data)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred")
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    fetchWhales();
-  }, []);
+    fetchWhales()
+  }, [])
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
-  };
+    return new Date(dateString).toLocaleString("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    })
+  }
 
   const truncateAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
 
-  const filteredWhales = whales.filter(whale => 
+  const filteredWhales = whales.filter((whale) =>
     whale.whale_address.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   if (isLoading) {
     return (
       <Card className="w-full">
-        <CardContent className="p-8 text-center">
-          Loading whales...
-        </CardContent>
+        <CardContent className="p-8 text-center">Loading whales...</CardContent>
       </Card>
-    );
+    )
   }
 
   if (error) {
@@ -75,7 +70,7 @@ export const WhaleList = () => {
           {error}
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -97,7 +92,10 @@ export const WhaleList = () => {
       <CardContent>
         <div className="space-y-4">
           {filteredWhales.map((whale, index) => (
-            <Card key={whale.whale_address + index} className="hover:shadow-md transition-shadow">
+            <Card
+              key={whale.whale_address + index}
+              className="hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-2">
@@ -105,7 +103,7 @@ export const WhaleList = () => {
                       {truncateAddress(whale.whale_address)}
                     </Badge>
                     <a
-                      href={`https://etherscan.io/address/${whale.whale_address}`}
+                      href={`https://basescan.org/address/${whale.whale_address}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-500 hover:text-gray-700"
@@ -121,7 +119,9 @@ export const WhaleList = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500 text-xs">First Seen</p>
-                    <p className="font-medium">{formatDate(whale.first_seen)}</p>
+                    <p className="font-medium">
+                      {formatDate(whale.first_seen)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Last Seen</p>
@@ -129,11 +129,15 @@ export const WhaleList = () => {
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Created At</p>
-                    <p className="font-medium">{formatDate(whale.created_at)}</p>
+                    <p className="font-medium">
+                      {formatDate(whale.created_at)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Updated At</p>
-                    <p className="font-medium">{formatDate(whale.updated_at)}</p>
+                    <p className="font-medium">
+                      {formatDate(whale.updated_at)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -142,7 +146,7 @@ export const WhaleList = () => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default WhaleList;
+export default WhaleList

@@ -8,18 +8,20 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { RocketIcon, CheckCircle2, XCircle } from "lucide-react"
+import { RocketIcon } from "lucide-react"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { ContractEvent, useWalletFactory } from "@/hooks/useWalletFactory"
 
 interface DeployWalletProps {
   onSuccess?: () => void
 }
 
 export default function DeployWallet({ onSuccess }: DeployWalletProps) {
-  const { authenticated, user } = usePrivy()
+  const { user } = usePrivy()
   const [isDeploying, setIsDeploying] = useState(false)
   const { toast } = useToast()
+  const { watchForEvent } = useWalletFactory()
 
   async function deployWallet() {
     if (!user?.wallet?.address) return
@@ -35,13 +37,20 @@ export default function DeployWallet({ onSuccess }: DeployWalletProps) {
       const { success, error } = await response.json()
 
       if (success) {
-        toast({
-          title: "Wallet Deployed Successfully",
-          description: "Your Smart Wallet is ready to use",
-          variant: "default",
-          duration: 5000,
+        watchForEvent({
+          event: ContractEvent.WALLET_DEPLOYED,
+          args: { owner: user.wallet?.address },
+          handler: async (logs) => {
+            toast({
+              title: "Wallet Deployed Successfully",
+              description: "Your Smart Wallet is ready to use",
+              variant: "default",
+              duration: 5000,
+            })
+
+            if (onSuccess) onSuccess()
+          },
         })
-        if (onSuccess) onSuccess()
       }
 
       if (error) {

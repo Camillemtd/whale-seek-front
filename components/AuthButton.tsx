@@ -1,11 +1,15 @@
-import React from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import React from "react"
+import { usePrivy } from "@privy-io/react-auth"
 
-const AuthButton = ({ showEmail = true, showWallet = true, className = '' }) => {
-  const { login, logout, authenticated, user, ready } = usePrivy();
+const AuthButton = ({
+  showEmail = true,
+  showWallet = true,
+  className = "",
+}) => {
+  const { login, logout, authenticated, user, ready } = usePrivy()
 
   if (!ready) {
-    return <div className="h-9 w-24 bg-gray-100 animate-pulse rounded" />;
+    return <div className="h-9 w-24 bg-gray-100 animate-pulse rounded" />
   }
 
   if (authenticated) {
@@ -18,17 +22,18 @@ const AuthButton = ({ showEmail = true, showWallet = true, className = '' }) => 
         )}
         {showWallet && user?.wallet?.address && (
           <span className="text-sm text-gray-600">
-            Wallet: {user.wallet.address.slice(0, 6)}...{user.wallet.address.slice(-4)}
+            Wallet: {user.wallet.address.slice(0, 6)}...
+            {user.wallet.address.slice(-4)}
           </span>
         )}
         <button
           onClick={logout}
           className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm transition-colors"
         >
-          Déconnexion
+          Logout
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -38,7 +43,7 @@ const AuthButton = ({ showEmail = true, showWallet = true, className = '' }) => 
     >
       Connect your wallet
     </button>
-  );
-};
+  )
+}
 
-export default AuthButton;
+export default AuthButton

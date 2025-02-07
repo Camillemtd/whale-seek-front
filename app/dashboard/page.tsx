@@ -11,33 +11,43 @@ import ChatInterface from "@/components/chat/ChatInterface"
 import DeployWallet from "@/components/DeployWallet"
 import Image from "next/image"
 import AuthButton from "../../components/AuthButton"
+import { Address, zeroAddress } from "viem"
+import Link from "next/link"
 
 type TabType = "chat" | "transactions" | "whales"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("chat")
-  const [hasDeployedWallet, setHasDeployedWallet] = useState<boolean | null>(null)
+  const [tradingWallet, setTradingWallet] = useState<Address | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
 
   const { user } = usePrivy()
-  const { getWalletsByOwner } = useWalletFactory()
+  const { getOwnerWallet } = useWalletFactory()
+  const userAccount = user?.wallet?.address as Address
 
   const checkWalletDeployment = useCallback(async () => {
-    if (!user?.wallet?.address) return
+    if (!userAccount) return
+
     try {
-      const wallets = await getWalletsByOwner(user.wallet.address as `0x${string}`)
-      setHasDeployedWallet((wallets as `0x${string}`[]).length > 0)
+      const wallet: any = await getOwnerWallet(userAccount as `0x${string}`)
+
+      if (wallet == zeroAddress) return
+
+      setTradingWallet(wallet)
     } catch (error) {
       console.error("Error checking wallet:", error)
-      setHasDeployedWallet(false)
+    } finally {
+      setLoading(false)
     }
-  }, [user?.wallet?.address, getWalletsByOwner])
+  }, [userAccount])
 
   useEffect(() => {
+    setLoading(true)
     checkWalletDeployment()
   }, [checkWalletDeployment])
 
   const renderMainContent = () => {
-    if (!user?.wallet?.address) {
+    if (!userAccount) {
       return (
         <div className="flex flex-col items-center justify-center h-full bg-gradient-to-b from-background to-background/80">
           <div className="text-center space-y-6 max-w-2xl mx-auto px-4">
@@ -81,7 +91,7 @@ export default function Dashboard() {
       )
     }
 
-    if (hasDeployedWallet === null) {
+    if (loading) {
       return (
         <div className="flex h-full items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -89,7 +99,7 @@ export default function Dashboard() {
       )
     }
 
-    if (!hasDeployedWallet) {
+    if (!tradingWallet) {
       return (
         <div className="flex h-full items-center justify-center">
           <DeployWallet onSuccess={checkWalletDeployment} />
@@ -101,7 +111,7 @@ export default function Dashboard() {
       <>
         {activeTab === "chat" && <ChatInterface />}
         {activeTab === "transactions" && (
-          <TransactionList walletAddress={user.wallet.address as `0x${string}`} />
+          <TransactionList walletAddress={tradingWallet} />
         )}
         {activeTab === "whales" && <WhaleList />}
       </>
@@ -114,7 +124,11 @@ export default function Dashboard() {
     description: string
   }
 
-  const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => (
+  const FeatureCard = ({
+    icon: Icon,
+    title,
+    description,
+  }: FeatureCardProps) => (
     <div className="p-6 rounded-lg border bg-card hover:shadow-lg transition-shadow">
       <Icon className="w-12 h-12 text-primary mb-4" />
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
@@ -125,7 +139,7 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-background">
       <div className="fixed w-20 h-screen bg-card p-4 flex flex-col items-center border-r overflow-hidden">
-        <div className="">
+        <Link href="/">
           <Image
             src="/icon.png"
             alt="Logo"
@@ -133,7 +147,7 @@ export default function Dashboard() {
             height={64}
             className="mb-4"
           />
-        </div>
+        </Link>
         <NavButton
           icon={MessageSquare}
           label="Chat"
@@ -154,9 +168,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="ml-20 flex-1 p-6 pt-20">
-        {renderMainContent()}
-      </div>
+      <div className="ml-20 flex-1 p-6 pt-20">{renderMainContent()}</div>
     </div>
   )
 }

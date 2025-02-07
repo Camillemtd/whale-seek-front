@@ -7,7 +7,7 @@ import {
   CardDescription,
 } from "@/components/ui/card"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
-import { formatEther, formatUnits } from "viem"
+import { Address, formatEther } from "viem"
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ type SwapTransaction = {
 }
 
 interface TransactionListProps {
-  walletAddress: `0x${string}`
+  walletAddress: Address
 }
 
 export const TransactionList = ({ walletAddress }: TransactionListProps) => {
@@ -41,7 +41,7 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
         const swapHistory = await getFullSwapHistory(walletAddress)
         setSwaps(swapHistory)
       } catch (error) {
-        console.error("Erreur lors de la récupération des swaps:", error)
+        console.error("Error while fetching swaps:", error)
       } finally {
         setIsLoading(false)
       }
@@ -65,20 +65,18 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ArrowRightLeft className="h-5 w-5" />
-          Historique des Swaps
+          Swap History
         </CardTitle>
-        <CardDescription>
-          Liste de tous les swaps effectués par ce wallet
-        </CardDescription>
+        <CardDescription>List of all swaps made by this wallet</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
-            <div className="animate-pulse">Chargement des swaps...</div>
+            <div className="animate-pulse">Loading swaps...</div>
           </div>
         ) : swaps.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            Aucun swap n'a encore été effectué
+            No swaps have been made yet
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -88,8 +86,8 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
                   <TableHead>Date</TableHead>
                   <TableHead>Token In</TableHead>
                   <TableHead>Token Out</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Statut</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,12 +102,10 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
                     <TableCell className="font-mono">
                       {truncateAddress(swap.tokenOut)}
                     </TableCell>
-                    <TableCell>
-                      {formatEther(BigInt(swap.amountIn))}
-                    </TableCell>
+                    <TableCell>{formatEther(BigInt(swap.amountIn))}</TableCell>
                     <TableCell>
                       <Badge variant="default" className="bg-green-500">
-                        Succès
+                        Success
                       </Badge>
                     </TableCell>
                   </TableRow>
