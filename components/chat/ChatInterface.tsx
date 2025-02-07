@@ -52,7 +52,7 @@ const ChatInterface = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_API_URL}/agent`,
+        `${process.env.NEXT_PUBLIC_SERVER_API_URL}agent`,
         {
           method: "POST",
           headers: {
