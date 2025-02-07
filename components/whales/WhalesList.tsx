@@ -23,7 +23,7 @@ export const WhaleList = () => {
     const fetchWhales = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_API_URL}/whales`
+          `${process.env.NEXT_PUBLIC_SERVER_API_URL}whales`
         )
         if (!response.ok) {
           throw new Error("Failed to fetch whales")
