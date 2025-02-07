@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { MessageSquare, Wallet, Users, LucideIcon } from "lucide-react"
+import { MessageSquare, Wallet, Users, LucideIcon, ArrowRightLeft } from "lucide-react"
 import { NavButton } from "@/components/layout/NavButton"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
 import { usePrivy } from "@privy-io/react-auth"
@@ -157,7 +157,7 @@ export default function Dashboard() {
           onClick={() => setActiveTab("chat")}
         />
         <NavButton
-          icon={Wallet}
+          icon={ArrowRightLeft}
           label="Transactions"
           active={activeTab === "transactions"}
           onClick={() => setActiveTab("transactions")}
@@ -169,7 +169,7 @@ export default function Dashboard() {
           onClick={() => setActiveTab("whales")}
         />
         <NavButton
-          icon={Users}
+          icon={Wallet}
           label="Wallet management"
           active={activeTab === "wallet"}
           onClick={() => setActiveTab("wallet")}
