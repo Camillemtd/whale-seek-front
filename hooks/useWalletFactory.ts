@@ -1,9 +1,9 @@
 import { createPublicClient, createWalletClient, custom, http } from "viem"
-import { baseSepolia } from "viem/chains"
+import { base } from "viem/chains"
 import { useCallback } from "react"
 import {
-  BASE_SEPOLIA_FACTORY_ADDRESS,
-  BASE_SEPOLIA_FACTORY_ABI,
+  BASE_MAINNET_FACTORY_ADDRESS,
+  FACTORY_ABI,
   BASE_SEPOLIA_WALLET_ABI,
 } from "@/constants/contract"
 
@@ -21,13 +21,6 @@ type SwapInfo = {
   executedAt: bigint
 }
 
-// event WalletDeployed(
-//   address indexed walletAddress,
-//   address indexed owner,
-//   address indexed agent,
-//   uint256 deployedAt
-// );
-
 export enum ContractEvent {
   WALLET_DEPLOYED = "WalletDeployed",
 }
@@ -40,7 +33,7 @@ interface WatchContractEventArgs {
 
 export const useWalletFactory = () => {
   const publicClient = createPublicClient({
-    chain: baseSepolia,
+    chain: base,
     transport: http(),
   })
 
@@ -48,7 +41,7 @@ export const useWalletFactory = () => {
     if (!window.ethereum) throw new Error("Metamask non détecté")
 
     return createWalletClient({
-      chain: baseSepolia,
+      chain: base,
       transport: custom(window.ethereum),
     })
   }, [])
@@ -59,8 +52,8 @@ export const useWalletFactory = () => {
     handler,
   }: WatchContractEventArgs) {
     publicClient.watchContractEvent({
-      address: BASE_SEPOLIA_FACTORY_ADDRESS,
-      abi: BASE_SEPOLIA_FACTORY_ABI,
+      address: BASE_MAINNET_FACTORY_ADDRESS,
+      abi: FACTORY_ABI,
       eventName: event,
       args,
       onLogs: (logs: any) => {
@@ -74,8 +67,8 @@ export const useWalletFactory = () => {
     async (walletAddress: `0x${string}`) => {
       try {
         return await publicClient.readContract({
-          address: BASE_SEPOLIA_FACTORY_ADDRESS,
-          abi: BASE_SEPOLIA_FACTORY_ABI,
+          address: BASE_MAINNET_FACTORY_ADDRESS,
+          abi: FACTORY_ABI,
           functionName: "isDeployedWallet",
           args: [walletAddress],
         })
@@ -92,8 +85,8 @@ export const useWalletFactory = () => {
     async (walletAddress: `0x${string}`) => {
       try {
         const walletInfo = (await publicClient.readContract({
-          address: BASE_SEPOLIA_FACTORY_ADDRESS,
-          abi: BASE_SEPOLIA_FACTORY_ABI,
+          address: BASE_MAINNET_FACTORY_ADDRESS,
+          abi: FACTORY_ABI,
           functionName: "getWalletInfo",
           args: [walletAddress],
         })) as WalletInfo
@@ -119,8 +112,8 @@ export const useWalletFactory = () => {
   const getAllDeployedWallets = useCallback(async () => {
     try {
       return await publicClient.readContract({
-        address: BASE_SEPOLIA_FACTORY_ADDRESS,
-        abi: BASE_SEPOLIA_FACTORY_ABI,
+        address: BASE_MAINNET_FACTORY_ADDRESS,
+        abi: FACTORY_ABI,
         functionName: "getAllWallets",
       })
     } catch (error) {
@@ -137,8 +130,8 @@ export const useWalletFactory = () => {
     async (ownerAddress: `0x${string}`) => {
       try {
         return await publicClient.readContract({
-          address: BASE_SEPOLIA_FACTORY_ADDRESS,
-          abi: BASE_SEPOLIA_FACTORY_ABI,
+          address: BASE_MAINNET_FACTORY_ADDRESS,
+          abi: FACTORY_ABI,
           functionName: "getOwnerWallet",
           args: [ownerAddress],
         })
@@ -238,5 +231,6 @@ export const useWalletFactory = () => {
     getSwapInfo,
     getFullSwapHistory,
     watchForEvent,
+    publicClient,
   }
 }

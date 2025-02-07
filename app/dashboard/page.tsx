@@ -13,8 +13,9 @@ import Image from "next/image"
 import AuthButton from "../../components/AuthButton"
 import { Address, zeroAddress } from "viem"
 import Link from "next/link"
+import WalletManagement from "@/components/WalletManagement"
 
-type TabType = "chat" | "transactions" | "whales"
+type TabType = "chat" | "transactions" | "whales" | "wallet"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("chat")
@@ -114,6 +115,7 @@ export default function Dashboard() {
           <TransactionList walletAddress={tradingWallet} />
         )}
         {activeTab === "whales" && <WhaleList />}
+        {activeTab === "wallet" && <WalletManagement tradingWallet={tradingWallet} />}
       </>
     )
   }
@@ -165,6 +167,12 @@ export default function Dashboard() {
           label="Whales"
           active={activeTab === "whales"}
           onClick={() => setActiveTab("whales")}
+        />
+        <NavButton
+          icon={Users}
+          label="Wallet management"
+          active={activeTab === "wallet"}
+          onClick={() => setActiveTab("wallet")}
         />
       </div>
 

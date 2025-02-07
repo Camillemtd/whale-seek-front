@@ -123,9 +123,7 @@ const ChatInterface = () => {
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-200 p-4 rounded-lg">
-              En train de réfléchir...
-            </div>
+            <div className="bg-gray-200 p-4 rounded-lg">Thinking...</div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -139,7 +137,7 @@ const ChatInterface = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setInput(e.target.value)
             }
-            placeholder="Écrivez votre message ici..."
+            placeholder="What's my wallet balance ?"
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             disabled={isLoading}
           />

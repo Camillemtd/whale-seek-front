@@ -1,24 +1,32 @@
 // app/providers.tsx
-'use client';
+"use client"
 
-import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyProvider } from "@privy-io/react-auth"
+import { OnchainKitProvider } from "@coinbase/onchainkit"
+import { base } from "viem/chains"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const key = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY
   return (
     <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
+      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
       config={{
         appearance: {
-          theme: 'light',
-          accentColor: '#3B82F6',
+          theme: "light",
+          accentColor: "#3B82F6",
         },
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
+          createOnLogin: "users-without-wallets",
         },
-        loginMethods: ['email', 'wallet'],
+        loginMethods: ["email", "wallet"],
       }}
     >
-      {children}
+      <OnchainKitProvider
+        apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+        chain={base}
+      >
+        {children}
+      </OnchainKitProvider>
     </PrivyProvider>
-  );
+  )
 }
