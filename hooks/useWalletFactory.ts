@@ -1,4 +1,10 @@
-import { createPublicClient, createWalletClient, custom, http } from "viem"
+import {
+  Address,
+  createPublicClient,
+  createWalletClient,
+  custom,
+  http,
+} from "viem"
 import { base } from "viem/chains"
 import { useCallback } from "react"
 import {
@@ -6,6 +12,7 @@ import {
   FACTORY_ABI,
   BASE_SEPOLIA_WALLET_ABI,
 } from "@/constants/contract"
+import { usePrivy } from "@privy-io/react-auth"
 
 type WalletInfo = {
   walletAddress: `0x${string}`
@@ -36,6 +43,10 @@ export const useWalletFactory = () => {
     chain: base,
     transport: http(),
   })
+
+  const { user } = usePrivy()
+
+  const userAccount = user?.wallet?.address as Address
 
   const getWalletClient = useCallback(async () => {
     if (!window.ethereum) throw new Error("Metamask non détecté")
@@ -221,6 +232,57 @@ export const useWalletFactory = () => {
     []
   )
 
+  const withdrawEth = useCallback(
+    async (walletAddress: `0x${string}`, to: `0x${string}`, amount: bigint) => {
+      try {
+        const walletClient = await getWalletClient()
+
+        const { request } = await publicClient.simulateContract({
+          address: walletAddress,
+          abi: BASE_SEPOLIA_WALLET_ABI,
+          functionName: "withdrawEth",
+          args: [to, amount],
+          account: userAccount,
+        })
+
+        const hash = await walletClient.writeContract(request)
+        return hash
+      } catch (error) {
+        console.error("Erreur lors du retrait d'ETH:", error)
+        throw error
+      }
+    },
+    [publicClient, getWalletClient]
+  )
+
+  const withdrawERC20 = useCallback(
+    async (
+      walletAddress: `0x${string}`,
+      tokenAddress: `0x${string}`,
+      to: `0x${string}`,
+      amount: bigint
+    ) => {
+      try {
+        const walletClient = await getWalletClient()
+
+        const { request } = await publicClient.simulateContract({
+          address: walletAddress,
+          abi: BASE_SEPOLIA_WALLET_ABI,
+          functionName: "withdrawERC20",
+          args: [tokenAddress, to, amount],
+          account: userAccount,
+        })
+
+        const hash = await walletClient.writeContract(request)
+        return hash
+      } catch (error) {
+        console.error("Erreur lors du retrait du token ERC20:", error)
+        throw error
+      }
+    },
+    [publicClient, getWalletClient]
+  )
+
   return {
     checkIsWalletDeployed,
     getWalletInformation,
@@ -231,6 +293,8 @@ export const useWalletFactory = () => {
     getSwapInfo,
     getFullSwapHistory,
     watchForEvent,
+    withdrawEth, 
+    withdrawERC20,
     publicClient,
   }
 }

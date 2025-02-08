@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
-import { Search, X, Wallet, ChevronDown, ArrowRight, Loader2 } from "lucide-react"
+import { Search, X, Wallet, ChevronDown, ArrowRight, ArrowLeft, Loader2 } from "lucide-react"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
 import { usePrivy } from "@privy-io/react-auth"
 import { Address, erc20Abi, parseUnits } from "viem"
@@ -18,13 +18,15 @@ type Token = {
   symbol: string
 }
 
+type Mode = "fund" | "withdraw"
+
 export default function WalletManagement({
   tradingWallet,
 }: {
   tradingWallet: Address
 }) {
   const { toast } = useToast()
-  const { getWalletClient, publicClient } = useWalletFactory()
+  const { getWalletClient, publicClient, withdrawEth, withdrawERC20 } = useWalletFactory()
   const { user } = usePrivy()
   const [tokens, setTokens] = useState<Token[]>([])
   const [selectedToken, setSelectedToken] = useState<Token | null>(null)
@@ -32,6 +34,7 @@ export default function WalletManagement({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [amount, setAmount] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
+  const [mode, setMode] = useState<Mode>("fund")
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const userAccount = user?.wallet?.address as Address
@@ -74,54 +77,56 @@ export default function WalletManagement({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  async function fundWallet() {
+  async function handleTransaction() {
     if (!amount || !selectedToken) return
 
     setIsLoading(true)
     try {
-      if (selectedToken.address) {
-        const walletClient = await getWalletClient()
-        const decimals = selectedToken?.decimals ?? 18
+      const decimals = selectedToken?.decimals ?? 18
+      const parsedAmount = parseUnits(amount, decimals)
 
-        const { request } = await publicClient.simulateContract({
-          address: selectedToken.address,
-          abi: erc20Abi,
-          functionName: "transfer",
-          args: [tradingWallet, parseUnits(amount, decimals)],
-          account: userAccount,
-        })
+      let hash: `0x${string}`
 
-        const hash = await walletClient.writeContract(request)
-        console.log("hash: ", hash)
-
-        toast({
-          title: "Transaction Successful",
-          description: `Successfully transferred ${amount} ${selectedToken.symbol}`,
-          action: (
-            <ToastAction altText="View on Explorer" onClick={() => window.open(`https://etherscan.io/tx/${hash}`, '_blank')}>
-              View on Explorer
-            </ToastAction>
-          ),
-        })
-
-        clearSelection()
-        return
+      if (mode === "fund") {
+        if (selectedToken.address) {
+          const walletClient = await getWalletClient()
+          const { request } = await publicClient.simulateContract({
+            address: selectedToken.address,
+            abi: erc20Abi,
+            functionName: "transfer",
+            args: [tradingWallet, parsedAmount],
+            account: userAccount,
+          })
+          hash = await walletClient.writeContract(request)
+        } else {
+          const walletClient = await getWalletClient()
+          hash = await walletClient.sendTransaction({
+            account: userAccount,
+            to: tradingWallet,
+            value: parsedAmount,
+          })
+        }
+      } else {
+        if (selectedToken.address) {
+          hash = await withdrawERC20(
+            tradingWallet,
+            selectedToken.address,
+            userAccount,
+            parsedAmount
+          )
+        } else {
+          hash = await withdrawEth(
+            tradingWallet,
+            userAccount,
+            parsedAmount
+          )
+          console.log(hash)
+        }
       }
-
-      const walletClient = await getWalletClient()
-      const decimals = 18
-
-      const hash = await walletClient.sendTransaction({
-        account: userAccount,
-        to: tradingWallet,
-        value: parseUnits(amount, decimals),
-      })
-
-      console.log("hash: ", hash)
       
       toast({
         title: "Transaction Successful",
-        description: `Successfully transferred ${amount} ETH`,
+        description: `Successfully ${mode === "fund" ? "funded" : "withdrawn"} ${amount} ${selectedToken.symbol || "ETH"}`,
         action: (
           <ToastAction altText="View on Explorer" onClick={() => window.open(`https://etherscan.io/tx/${hash}`, '_blank')}>
             View on Explorer
@@ -157,9 +162,31 @@ export default function WalletManagement({
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <Wallet className="w-8 h-8 text-blue-600" />
-        <h2 className="text-2xl font-bold text-gray-800">Wallet Management</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <Wallet className="w-8 h-8 text-blue-600" />
+          <h2 className="text-2xl font-bold text-gray-800">Wallet Management</h2>
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant={mode === "fund" ? "default" : "outline"}
+            onClick={() => setMode("fund")}
+            className="flex items-center"
+            disabled={isLoading}
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            Fund
+          </Button>
+          <Button
+            variant={mode === "withdraw" ? "default" : "outline"}
+            onClick={() => setMode("withdraw")}
+            className="flex items-center"
+            disabled={isLoading}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Withdraw
+          </Button>
+        </div>
       </div>
 
       <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -168,7 +195,11 @@ export default function WalletManagement({
             <p className="text-sm text-gray-500 mb-1">Trading Wallet Address</p>
             <p className="font-mono text-sm text-gray-700">{tradingWallet}</p>
           </div>
-          <ArrowRight className="w-5 h-5 text-gray-400" />
+          {mode === "fund" ? (
+            <ArrowRight className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
+          )}
         </div>
       </div>
 
@@ -293,12 +324,12 @@ export default function WalletManagement({
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder={`Enter amount of ${selectedToken.symbol}`}
+              placeholder={`Enter amount of ${selectedToken.symbol || "ETH"}`}
               className="w-full h-14 text-lg"
               disabled={isLoading}
             />
             <Button
-              onClick={fundWallet}
+              onClick={handleTransaction}
               className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
               disabled={!amount || parseFloat(amount) <= 0 || isLoading}
             >
@@ -307,8 +338,10 @@ export default function WalletManagement({
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Processing...
                 </>
-              ) : (
+              ) : mode === "fund" ? (
                 'Fund Trading Wallet'
+              ) : (
+                'Withdraw from Trading Wallet'
               )}
             </Button>
           </div>
