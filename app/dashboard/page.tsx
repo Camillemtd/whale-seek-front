@@ -1,7 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { MessageSquare, Wallet, Users, LucideIcon, ArrowRightLeft } from "lucide-react"
+import { useState, useEffect, useCallback, use } from "react"
+import {
+  MessageSquare,
+  Wallet,
+  Users,
+  LucideIcon,
+  ArrowRightLeft,
+} from "lucide-react"
 import { NavButton } from "@/components/layout/NavButton"
 import { useWalletFactory } from "@/hooks/useWalletFactory"
 import { usePrivy } from "@privy-io/react-auth"
@@ -26,11 +32,20 @@ export default function Dashboard() {
   const { getOwnerWallet } = useWalletFactory()
   const userAccount = user?.wallet?.address as Address
 
-  const checkWalletDeployment = useCallback(async () => {
-    if (!userAccount) return
+  useEffect(() => {
+    if (!userAccount) {
+      setLoading(false)
+      return
+    }
 
+    checkWalletDeployment()
+  }, [userAccount])
+
+  async function checkWalletDeployment() {
     try {
       const wallet: any = await getOwnerWallet(userAccount as `0x${string}`)
+
+      console.log("wallet: ", wallet)
 
       if (wallet == zeroAddress) return
 
@@ -40,12 +55,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }, [userAccount])
-
-  useEffect(() => {
-    setLoading(true)
-    checkWalletDeployment()
-  }, [checkWalletDeployment])
+  }
 
   const renderMainContent = () => {
     if (!userAccount) {
@@ -103,7 +113,12 @@ export default function Dashboard() {
     if (!tradingWallet) {
       return (
         <div className="flex h-full items-center justify-center">
-          <DeployWallet onSuccess={checkWalletDeployment} />
+          <DeployWallet
+            onSuccess={() => {
+              console.log("SUCCES !!")
+              checkWalletDeployment()
+            }}
+          />
         </div>
       )
     }
@@ -115,7 +130,9 @@ export default function Dashboard() {
           <TransactionList walletAddress={tradingWallet} />
         )}
         {activeTab === "whales" && <WhaleList />}
-        {activeTab === "wallet" && <WalletManagement tradingWallet={tradingWallet} />}
+        {activeTab === "wallet" && (
+          <WalletManagement tradingWallet={tradingWallet} />
+        )}
       </>
     )
   }

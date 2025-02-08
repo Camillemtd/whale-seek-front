@@ -6,7 +6,6 @@ import { OnchainKitProvider } from "@coinbase/onchainkit"
 import { base } from "viem/chains"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const key = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}

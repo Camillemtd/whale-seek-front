@@ -10,10 +10,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     await deployWallet(account)
+    console.log("Deployed! ")
   } catch (error) {
     console.error(`Error deploying wallet for account ${account}. `, error)
     return NextResponse.json({ success: false, error }, { status: 500 })
   }
+
+  console.log("Returning response ")
 
   return NextResponse.json({
     success: true,

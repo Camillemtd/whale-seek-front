@@ -1,5 +1,6 @@
 "use client"
 import { usePrivy } from "@privy-io/react-auth"
+import { Contract, JsonRpcProvider } from "ethers"
 import {
   Card,
   CardContent,
@@ -9,9 +10,14 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RocketIcon } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { ContractEvent, useWalletFactory } from "@/hooks/useWalletFactory"
+import { BASE_MAINNET_FACTORY_ADDRESS, FACTORY_ABI } from "@/constants/contract"
+import { Address, getAddress } from "viem"
+
+export enum ContractEvent {
+  WALLET_DEPLOYED = "WalletDeployed",
+}
 
 interface DeployWalletProps {
   onSuccess?: () => void
@@ -21,7 +27,37 @@ export default function DeployWallet({ onSuccess }: DeployWalletProps) {
   const { user } = usePrivy()
   const [isDeploying, setIsDeploying] = useState(false)
   const { toast } = useToast()
-  const { watchForEvent } = useWalletFactory()
+
+  const userAccount = user?.wallet?.address as Address
+
+  useEffect(() => {
+    const provider = new JsonRpcProvider(
+      process.env.NEXT_PUBLIC_ALCHEMY_BASE_RPC_URL
+    )
+
+    const contract = new Contract(
+      BASE_MAINNET_FACTORY_ADDRESS,
+      FACTORY_ABI,
+      provider
+    )
+
+    contract.on(ContractEvent.WALLET_DEPLOYED, (...args) => {
+      const [_, owner, ...rest] = args
+
+      if (getAddress(owner) !== getAddress(userAccount)) return
+
+      toast({
+        title: "Wallet Deployed Successfully",
+        description: "Your Smart Wallet is ready to use",
+        variant: "default",
+        duration: 5000,
+      })
+
+      setIsDeploying(false)
+
+      if (onSuccess) onSuccess()
+    })
+  }, [])
 
   async function deployWallet() {
     if (!user?.wallet?.address) return
@@ -34,24 +70,7 @@ export default function DeployWallet({ onSuccess }: DeployWalletProps) {
         body: JSON.stringify({ account: user.wallet.address }),
       })
 
-      const { success, error } = await response.json()
-
-      if (success) {
-        watchForEvent({
-          event: ContractEvent.WALLET_DEPLOYED,
-          args: { owner: user.wallet?.address },
-          handler: async (logs) => {
-            toast({
-              title: "Wallet Deployed Successfully",
-              description: "Your Smart Wallet is ready to use",
-              variant: "default",
-              duration: 5000,
-            })
-
-            if (onSuccess) onSuccess()
-          },
-        })
-      }
+      const { error } = await response.json()
 
       if (error) {
         toast({
@@ -72,8 +91,6 @@ export default function DeployWallet({ onSuccess }: DeployWalletProps) {
         duration: 5000,
       })
       console.error("Deployment error:", error)
-    } finally {
-      setIsDeploying(false)
     }
   }
 
