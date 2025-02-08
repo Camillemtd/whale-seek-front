@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react"
 import { Send } from "lucide-react"
 import { usePrivy } from "@privy-io/react-auth"
 import { Skeleton } from "../ui/skeleton"
+import Markdown from "react-markdown"
 
 interface Message {
   type: "user" | "agent" | "error"
@@ -118,7 +119,7 @@ const ChatInterface = () => {
                   : "bg-white text-gray-800"
               }`}
             >
-              {message.content}
+              <Markdown>{message.content}</Markdown>
             </div>
           </div>
         ))}
