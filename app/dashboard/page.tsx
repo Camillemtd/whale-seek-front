@@ -157,6 +157,12 @@ export default function Dashboard() {
           onClick={() => setActiveTab("chat")}
         />
         <NavButton
+          icon={Wallet}
+          label="Wallet management"
+          active={activeTab === "wallet"}
+          onClick={() => setActiveTab("wallet")}
+        />
+        <NavButton
           icon={ArrowRightLeft}
           label="Transactions"
           active={activeTab === "transactions"}
@@ -167,12 +173,6 @@ export default function Dashboard() {
           label="Whales"
           active={activeTab === "whales"}
           onClick={() => setActiveTab("whales")}
-        />
-        <NavButton
-          icon={Wallet}
-          label="Wallet management"
-          active={activeTab === "wallet"}
-          onClick={() => setActiveTab("wallet")}
         />
       </div>
 
