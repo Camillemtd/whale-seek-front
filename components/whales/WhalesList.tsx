@@ -11,6 +11,23 @@ interface Whale {
   created_at: string
   updated_at: string
   detected_transaction_id: string
+  score: number
+}
+
+const getScoreColor = (score: number) => {
+  if (score >= 80) return "bg-green-500 text-white"
+  if (score >= 60) return "bg-green-400 text-white"
+  if (score >= 40) return "bg-yellow-400 text-black"
+  if (score >= 20) return "bg-orange-400 text-white"
+  return "bg-red-500 text-white"
+}
+
+const getScoreLabel = (score: number) => {
+  if (score >= 80) return "Very High"
+  if (score >= 60) return "High"
+  if (score >= 40) return "Medium"
+  if (score >= 20) return "Low"
+  return "Very Low"
 }
 
 export const WhaleList = () => {
@@ -138,6 +155,20 @@ export const WhaleList = () => {
                     <p className="font-medium">
                       {formatDate(whale.updated_at)}
                     </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-gray-500 text-xs">Score:</span>
+                  <div
+                    className={`px-3 py-1 rounded-full ${getScoreColor(
+                      whale.score
+                    )}`}
+                  >
+                    <span className="font-medium">{whale.score}</span>
+                    <span className="ml-2 text-xs">
+                      ({getScoreLabel(whale.score)})
+                    </span>
                   </div>
                 </div>
               </CardContent>

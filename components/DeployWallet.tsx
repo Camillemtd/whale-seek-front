@@ -104,7 +104,7 @@ export default function DeployWallet({ onSuccess }: DeployWalletProps) {
           <CardTitle className="text-2xl">Deploy Your Smart Wallet</CardTitle>
         </div>
         <CardDescription className="text-base space-y-2">
-          <p>Welcome to WhaleSeek AI, your personal trading assistant!</p>
+          <p>Welcome to Whal-E, your personal trading assistant!</p>
           <p>
             To get started, we need to deploy a Smart Wallet that will allow our
             AI agent to execute trades on your behalf while keeping your funds

@@ -22,7 +22,7 @@ const AuthButton = ({
         )}
         {showWallet && user?.wallet?.address && (
           <span className="text-sm text-gray-600">
-            Wallet: {user.wallet.address.slice(0, 6)}...
+            {user.wallet.address.slice(0, 6)}...
             {user.wallet.address.slice(-4)}
           </span>
         )}

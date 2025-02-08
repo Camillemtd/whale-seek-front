@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import { Send } from "lucide-react"
 import { usePrivy } from "@privy-io/react-auth"
+import { Skeleton } from "../ui/skeleton"
 
 interface Message {
   type: "user" | "agent" | "error"
@@ -123,7 +124,9 @@ const ChatInterface = () => {
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-200 p-4 rounded-lg">Thinking...</div>
+            <Skeleton className="bg-gray-200 p-4 rounded-lg">
+              <div className="">Thinking...</div>
+            </Skeleton>
           </div>
         )}
         <div ref={messagesEndRef} />

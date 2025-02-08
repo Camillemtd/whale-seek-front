@@ -148,7 +148,7 @@ export default function Dashboard() {
     title,
     description,
   }: FeatureCardProps) => (
-    <div className="p-6 rounded-lg border bg-card hover:shadow-lg transition-shadow">
+    <div className="p-6 rounded-lg border bg-card hover:shadow-lg transition-shadow flex flex-col items-center">
       <Icon className="w-12 h-12 text-primary mb-4" />
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <p className="text-muted-foreground">{description}</p>

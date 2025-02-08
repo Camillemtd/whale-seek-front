@@ -70,9 +70,12 @@ export default function WalletManagement({
   const fetchBalances = async () => {
     setIsLoadingBalances(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_API_URL}alchemy/balances/${tradingWallet}`, {
-        method: "GET",
-      })
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_API_URL}alchemy/balances/${tradingWallet}`,
+        {
+          method: "GET",
+        }
+      )
 
       if (!response.ok) {
         throw new Error("Failed to fetch balances")
@@ -87,6 +90,7 @@ export default function WalletManagement({
               limit: "1",
               search: "eth",
             })
+
             if (Array.isArray(tokenInfo) && tokenInfo.length > 0) {
               const firstToken = tokenInfo[0]
               return {
@@ -96,30 +100,33 @@ export default function WalletManagement({
               }
             }
 
-            try {
-              const tokenInfo: GetTokensResponse = await getTokens({
-                limit: "1", 
-                search: token.contractAddress,
-              })
+            return
+          }
 
-              if (Array.isArray(tokenInfo) && tokenInfo.length > 0) {
-                const firstToken = tokenInfo[0]
-                return {
-                  ...token,
-                  image: firstToken.image || null,
-                  symbol: firstToken.symbol || token.symbol,
-                }
+          try {
+            const tokenInfo: GetTokensResponse = await getTokens({
+              limit: "1",
+              search: token.contractAddress,
+            })
+
+            if (Array.isArray(tokenInfo) && tokenInfo.length > 0) {
+              const firstToken = tokenInfo[0]
+              return {
+                ...token,
+                image: firstToken.image || null,
+                symbol: firstToken.symbol || token.symbol,
               }
-            } catch (error) {
-              console.error(
-                `Error fetching token info for ${token.contractAddress}:`,
-                error
-              )
             }
-            return token
+          } catch (error) {
+            console.error(
+              `Error fetching token info for ${token.contractAddress}:`,
+              error
+            )
           }
         })
       )
+
+      console.log("enrichedTokens: ", enrichedTokens)
 
       setWalletBalances({
         ...data,
@@ -322,42 +329,50 @@ export default function WalletManagement({
             </div>
           ) : walletBalances?.tokens.length ? (
             <div className="space-y-2">
-              {walletBalances.tokens.map((token, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
-                >
-                  <div className="flex items-center space-x-3">
-                    {token.image ? (
-                      <img
-                        src={token.image}
-                        alt={token.symbol}
-                        className="w-8 h-8 rounded-full"
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).src =
-                            "/api/placeholder/40/40"
-                        }}
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-sm font-semibold text-blue-600">
-                          {token.symbol?.slice(0, 2)}
-                        </span>
+              {walletBalances.tokens.map((token, index) => {
+                if (!token) return
+
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
+                  >
+                    <div className="flex items-center space-x-3">
+                      {token.image ? (
+                        <img
+                          src={token.image}
+                          alt={token.symbol}
+                          className="w-8 h-8 rounded-full"
+                          onError={(e) => {
+                            ;(e.target as HTMLImageElement).src =
+                              "/api/placeholder/40/40"
+                          }}
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <span className="text-sm font-semibold text-blue-600">
+                            {token.symbol?.slice(0, 2)}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {token.symbol}
+                        </p>
+                        <p className="text-sm text-gray-500">{token.name}</p>
                       </div>
-                    )}
-                    <div>
+                    </div>
+                    <div className="text-right">
                       <p className="font-medium text-gray-900">
-                        {token.symbol}
+                        {token.balance}
                       </p>
-                      <p className="text-sm text-gray-500">{token.name}</p>
+                      <p className="text-sm text-gray-500">
+                        ${token.valueInUSD}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">{token.balance}</p>
-                    <p className="text-sm text-gray-500">${token.valueInUSD}</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <p className="text-center text-gray-500 py-4">
