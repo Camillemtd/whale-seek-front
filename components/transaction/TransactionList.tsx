@@ -17,11 +17,21 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRightLeft } from "lucide-react"
+import { ArrowRightLeft, Loader2 } from "lucide-react"
+import { getTokens } from "@coinbase/onchainkit/api"
 
-type SwapTransaction = {
-  tokenIn: `0x${string}`
-  tokenOut: `0x${string}`
+type Token = {
+  address: Address
+  chainId: number
+  decimals: number
+  image: string | null
+  name: string
+  symbol: string
+}
+
+type EnrichedSwap = {
+  tokenIn: Token
+  tokenOut: Token
   amountIn: string
   executedAt: string
 }
@@ -31,7 +41,7 @@ interface TransactionListProps {
 }
 
 export const TransactionList = ({ walletAddress }: TransactionListProps) => {
-  const [swaps, setSwaps] = useState<SwapTransaction[]>([])
+  const [swaps, setSwaps] = useState<EnrichedSwap[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const { getFullSwapHistory } = useWalletFactory()
 
@@ -39,7 +49,31 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
     const fetchSwaps = async () => {
       try {
         const swapHistory = await getFullSwapHistory(walletAddress)
-        setSwaps(swapHistory)
+
+        // Enrich swap data with token information
+        const enrichedSwaps = await Promise.all(
+          swapHistory.map(async (swap) => {
+            const [tokenInData, tokenOutData] = await Promise.all([
+              getTokens({
+                limit: "10",
+                search: swap.tokenIn,
+              }) as Promise<Token[]>,
+              getTokens({
+                limit: "10",
+                search: swap.tokenOut,
+              }) as Promise<Token[]>,
+            ])
+
+            return {
+              tokenIn: tokenInData[0],
+              tokenOut: tokenOutData[0],
+              amountIn: swap.amountIn,
+              executedAt: swap.executedAt,
+            }
+          })
+        )
+
+        setSwaps(enrichedSwaps)
       } catch (error) {
         console.error("Error while fetching swaps:", error)
       } finally {
@@ -56,10 +90,6 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
     return new Date(Number(timestamp) * 1000).toLocaleString()
   }
 
-  const truncateAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -72,7 +102,7 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
-            <div className="animate-pulse">Loading swaps...</div>
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : swaps.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -96,13 +126,54 @@ export const TransactionList = ({ walletAddress }: TransactionListProps) => {
                     <TableCell className="font-medium">
                       {formatDate(swap.executedAt)}
                     </TableCell>
-                    <TableCell className="font-mono">
-                      {truncateAddress(swap.tokenIn)}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {swap.tokenIn.image && (
+                          <img
+                            src={swap.tokenIn.image}
+                            alt={swap.tokenIn.symbol}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {swap.tokenIn.symbol}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {swap.tokenIn.name}
+                          </span>
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell className="font-mono">
-                      {truncateAddress(swap.tokenOut)}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {swap.tokenOut.image && (
+                          <img
+                            src={swap.tokenOut.image}
+                            alt={swap.tokenOut.symbol}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {swap.tokenOut.symbol}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {swap.tokenOut.name}
+                          </span>
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell>{formatEther(BigInt(swap.amountIn))}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {formatEther(BigInt(swap.amountIn))}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {swap.tokenIn.symbol}
+                        </span>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="default" className="bg-green-500">
                         Success
